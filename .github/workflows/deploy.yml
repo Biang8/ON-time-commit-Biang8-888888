@@ -1,4 +1,4 @@
-name: wxread  
+name: lwxread  
 
 # 定义工作流的触发条件
 on:
