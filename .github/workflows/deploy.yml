@@ -1,4 +1,4 @@
-name: lwxread  
+name: wxread
 
 # 定义工作流的触发条件
 on:
@@ -57,12 +57,10 @@ jobs:
 
     - name: 📦 安装依赖
       run: |
-        # 升级 pip 到最新版本
         python -m pip install --upgrade pip
-        # 安装指定版本的依赖库
-        pip install certifi==2024.8.30 charset-normalizer==3.4.0 idna==3.10.0 requests==2.32.3 urllib3==2.2.3
-        # 验证 requests 库是否安装成功
-        echo "✅ 依赖安装验证：$(pip list | grep requests)"
+        pip install --no-cache-dir -r requirements.txt
+        pip list  # 显示安装的依赖
+
 
     - name: ⏱️ 随机延迟（自动模式或计划模式或手动触发 自动 无自定义延迟）
       if: (github.event.inputs.mode == '自动' && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.custom_delay == '')))
