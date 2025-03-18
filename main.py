@@ -61,10 +61,11 @@ def main():
     logger.info(f"🎯 选定书籍: {selected_book} (b值: {selected_b})")
     total_read_time = 0.0
     index = 1
+
     while index <= READ_NUM:
         try:
-            # 重新读取 READ_COMPLETE_HEADER（保证每次都使用最新的环境变量值）
-            READ_COMPLETE_HEADER = os.getenv("READ_COMPLETE_HEADER", "🎉 微信读书自动阅读任务完成！")
+            # 读取 READ_COMPLETE_HEADER，若为空则使用默认值
+            READ_COMPLETE_HEADER = os.getenv("READ_COMPLETE_HEADER") or "🎉 微信阅读已完成！"
 
             # 更新动态参数
             REQUEST_DATA["ct"] = int(time.time())
@@ -86,20 +87,21 @@ def main():
                 total_read_time += 0.5
                 index += 1
                 time.sleep(30)  # 每次阅读间隔 30 秒
-                logger.info(f"✅ 阅读成功，阅读进度：{total_read_time:.1f} 分钟")
+                logger.info(f"✅ 阅读成功，当前累计进度：{total_read_time:.1f} 分钟")
             else:
-                logger.warning("❌ cookie 已过期，尝试刷新...")
+                logger.warning("❌ Cookie 可能已过期，尝试刷新...")
                 new_skey = get_wr_skey()
                 if new_skey:
                     COOKIES['wr_skey'] = new_skey
                     logger.info(f"✅ 密钥刷新成功，新密钥：{new_skey}")
-                    logger.info(f"🔄 重新本次阅读。")
+                    logger.info("🔄 重新尝试本次阅读。")
                 else:
-                    ERROR_CODE = "❌ 无法获取新密钥或者WXREAD_CURL_BASH配置有误，终止运行。"
+                    ERROR_CODE = "❌ 无法获取新密钥，终止运行。"
                     logger.error(ERROR_CODE)
                     push(ERROR_CODE, PUSH_METHOD)
                     raise Exception(ERROR_CODE)
             REQUEST_DATA.pop('s')
+
         except requests.exceptions.RequestException as e:
             logger.error(f"❌ 网络请求失败: {str(e)}")
         except Exception as e:
@@ -107,18 +109,20 @@ def main():
             break
 
     logger.info("🎉 阅读任务完成！")
+
+    # 发送推送通知
     if PUSH_METHOD:
         try:
             message = (
                 f"{READ_COMPLETE_HEADER}\n\n"
                 f"📚 书籍：《{selected_book}》\n"
-                f"⏱️ 阅读时长：{total_read_time:.1f}分钟\n"
+                f"⏱️ 阅读时长：{total_read_time:.1f} 分钟\n"
                 f"📅 完成时间：{time.strftime('%Y-%m-%d %H:%M:%S')}"
             )
             push(message, PUSH_METHOD)
-            logger.info("✅ 通知推送成功")
+            logger.info(f"✅ 推送成功: {READ_COMPLETE_HEADER}")
         except Exception as e:
-            logger.error(f"❌ 通知推送失败: {str(e)}")
+            logger.error(f"❌ 推送失败: {str(e)}")
 
 
 if __name__ == "__main__":
