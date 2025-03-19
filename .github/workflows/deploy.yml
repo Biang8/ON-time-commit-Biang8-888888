@@ -1,4 +1,4 @@
-name: Old WeChat
+name: Defect number  
 
 # 定义工作流的触发条件
 on:
@@ -84,78 +84,27 @@ jobs:
         # 验证 requests 库是否安装成功
         echo "✅ 依赖安装验证：$(pip list | grep requests)"
 
-    - name: ⏱️ 调试任务延迟（手动触发且选择调试任务）
-      if: github.event_name == 'workflow_dispatch' && github.event.inputs.debug_schedule != '无'
+    - name: ⏱️ 随机延迟（自动模式或计划模式或手动触发调试模式无自定义延迟）
+      if: (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.mode == '自动' || github.event.inputs.debug_schedule != '无') && github.event.inputs.custom_delay == ''))
       run: |
-        case "${{ github.event.inputs.debug_schedule }}" in
-          晚间任务)
-            SCHEDULE='0 14 * * *'
-            ;;
-          早间任务)
-            SCHEDULE='0 21 * * 0-4'
-            ;;
-          午间任务)
-            SCHEDULE='40 3 * * 1-5'
-            ;;
-          周末任务)
-            SCHEDULE='0 9 * * sat,sun'
-            ;;
-          周随机任务)
-            SCHEDULE='0 0 * * sat,sun'
-            ;;
-        esac
-        # 计算当前时间到预定时间的延迟
-        CURRENT_TIME=$(date +"%M %H %d %m %w")
-        IFS=' ' read -r MINUTE HOUR DAY MONTH WEEKDAY <<< "$CURRENT_TIME"
-        # 打印原始的 SCHEDULE 变量
-        echo "原始 SCHEDULE: $SCHEDULE"
-        # 明确指定 IFS 为空格
-        IFS=' '
-        CLEANED_SCHEDULE=$(echo $SCHEDULE | sed 's/*/0/g' | sed 's/sat/6/g' | sed 's/sun/0/g' | cut -d' ' -f1-5)
-        # 打印清理后的 SCHEDULE 变量
-        echo "清理后的 SCHEDULE: $CLEANED_SCHEDULE"
-        IFS=' ' read -r CRON_MINUTE CRON_HOUR CRON_DAY CRON_MONTH CRON_WEEKDAY <<< "$CLEANED_SCHEDULE"
+        # 生成 0 到 20 之间的随机数作为延迟分钟数
+        DELAY_MINUTES=$((RANDOM % 21))
+        # 生成 0 到 59 之间的随机数作为延迟秒数
+        DELAY_SECONDS=$((RANDOM % 60))
+        # 计算总延迟秒数
+        TOTAL_DELAY=$((DELAY_MINUTES * 60 + DELAY_SECONDS))
+        echo "⏳ 生成的随机延迟：${DELAY_MINUTES} 分钟 ${DELAY_SECONDS} 秒"
+        sleep $TOTAL_DELAY
+        echo "✅ 延迟执行完成"
 
-        # 打印解析后的变量
-        echo "解析后的 CRON_MINUTE: $CRON_MINUTE"
-        echo "解析后的 CRON_HOUR: $CRON_HOUR"
-        echo "解析后的 CRON_DAY: $CRON_DAY"
-        echo "解析后的 CRON_MONTH: $CRON_MONTH"
-        echo "解析后的 CRON_WEEKDAY: $CRON_WEEKDAY"
+    - name: ⏱️ 自定义延迟（手动触发）
+      if: github.event_name == 'workflow_dispatch' && github.event.inputs.custom_delay != ''
+      run: |
+        DELAY=${{ github.event.inputs.custom_delay }}
+        echo "⏳ 自定义延迟：${DELAY} 分钟"
+        sleep $((DELAY * 60))
+        echo "✅ 延迟执行完成"
 
-        # 检查解析后的变量是否为数字
-        if ! [[ $CRON_MINUTE =~ ^[0-9]+$ ]] || ! [[ $CRON_HOUR =~ ^[0-9]+$ ]] || ! [[ $CRON_DAY =~ ^[0-9]+$ ]] || ! [[ $CRON_MONTH =~ ^[0-9]+$ ]] || ! [[ $CRON_WEEKDAY =~ ^[0-9]+$ ]]; then
-            echo "Error: 解析后的日期变量包含非数字字符"
-            exit 1
-        fi
-
-        # 打印调试信息
-        echo "CURRENT: MONTH=$MONTH, DAY=$DAY, HOUR=$HOUR, MINUTE=$MINUTE"
-        echo "SCHEDULED: CRON_MONTH=$CRON_MONTH, CRON_DAY=$CRON_DAY, CRON_HOUR=$CRON_HOUR, CRON_MINUTE=$CRON_MINUTE"
-
-        # 计算延迟时间，考虑日期跨天
-        CURRENT_TIMESTAMP=$(date -d "$MONTH/$DAY/$((1900 + $(date +%y))) $HOUR:$MINUTE" +%s 2>/dev/null)
-        if [ $? -ne 0 ]; then
-            echo "Error: Failed to parse current date: $MONTH/$DAY/$((1900 + $(date +%y))) $HOUR:$MINUTE"
-            exit 1
-        fi
-
-        SCHEDULED_TIMESTAMP=$(date -d "$CRON_MONTH/$CRON_DAY/$((1900 + $(date +%y))) $CRON_HOUR:$CRON_MINUTE" +%s 2>/dev/null)
-        if [ $? -ne 0 ]; then
-            echo "Error: Failed to parse scheduled date: $CRON_MONTH/$CRON_DAY/$((1900 + $(date +%y))) $CRON_HOUR:$CRON_MINUTE"
-            exit 1
-        fi
-
-        if [ $SCHEDULED_TIMESTAMP -lt $CURRENT_TIMESTAMP ]; then
-          SCHEDULED_TIMESTAMP=$((SCHEDULED_TIMESTAMP + 86400)) # 加一天
-        fi
-
-        DELAY_SECONDS=$((SCHEDULED_TIMESTAMP - CURRENT_TIMESTAMP))
-        DELAY_MINUTES=$((DELAY_SECONDS / 60))
-
-        echo "⏳ 调试任务延迟：${DELAY_MINUTES} 分钟"
-        sleep $DELAY_MINUTES  
-        
     - name: 🎲 周随机检查
       id: week_random_check
       if: (github.event_name == 'schedule' && github.event.schedule == '0 0 * * sat,sun') || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_schedule == '周随机任务')
@@ -186,6 +135,7 @@ jobs:
         echo "调试定时任务: ${{ github.event.inputs.debug_schedule }}"
 
         if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          # 手动触发时，处理调试定时任务
           if [[ "${{ github.event.inputs.debug_schedule }}" != "无" ]]; then
             case "${{ github.event.inputs.debug_schedule }}" in
               晚间任务)
