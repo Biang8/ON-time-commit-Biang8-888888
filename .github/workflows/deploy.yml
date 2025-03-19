@@ -15,7 +15,7 @@ on:
     # 周随机任务：北京时间周末 08:00 触发，转换为 UTC 时间是前一天的 00:00
     - cron: '0 0 * * sat,sun'     # 北京时间：08:00（周六和周日），UTC 时间：00:00（周五和周六）
   # 手动触发条件
-  workflow_dispatch:
+  workflow_dispatch:  
     description: 手动触发微信阅读任务
     inputs:
       mode:
@@ -37,7 +37,7 @@ on:
         type: string
         description: '手动输入自定义延迟时间（分钟，仅手动触发有效）。输入后，任务会延迟相应的分钟数执行。'
         required: false
-      debug_schedule:
+      debug_schedule:  
         type: choice
         description: '选择调试定时任务，开启后按指定任务时间运行'
         required: false
@@ -58,7 +58,7 @@ jobs:
       week_random_skipped: ${{ steps.week_random_check.outputs.skipped }}
 
     steps:
-    - name: 🔧 设置 DNS
+    - name: 🔧 设置 DNS  
       run: |
         # 配置主 DNS 服务器为 Google 的公共 DNS
         echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
@@ -109,7 +109,9 @@ jobs:
         IFS=' ' read -r MINUTE HOUR DAY MONTH WEEKDAY <<< "$CURRENT_TIME"
         # 打印原始的 SCHEDULE 变量
         echo "原始 SCHEDULE: $SCHEDULE"
-        CLEANED_SCHEDULE=$(echo $SCHEDULE | sed 's/*/0/g' | sed 's/sat/6/g' | sed 's/sun/0/g')
+        # 明确指定 IFS 为空格
+        IFS=' '
+        CLEANED_SCHEDULE=$(echo $SCHEDULE | sed 's/*/0/g' | sed 's/sat/6/g' | sed 's/sun/0/g' | cut -d' ' -f1-5)
         # 打印清理后的 SCHEDULE 变量
         echo "清理后的 SCHEDULE: $CLEANED_SCHEDULE"
         IFS=' ' read -r CRON_MINUTE CRON_HOUR CRON_DAY CRON_MONTH CRON_WEEKDAY <<< "$CLEANED_SCHEDULE"
@@ -152,7 +154,7 @@ jobs:
         DELAY_MINUTES=$((DELAY_SECONDS / 60))
 
         echo "⏳ 调试任务延迟：${DELAY_MINUTES} 分钟"
-        sleep $DELAY_MINUTES
+        sleep $DELAY_MINUTES  
         
     - name: 🎲 周随机检查
       id: week_random_check
