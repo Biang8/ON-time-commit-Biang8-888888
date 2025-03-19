@@ -15,7 +15,7 @@ on:
     # 周随机任务：北京时间周末 08:00 触发，转换为 UTC 时间是前一天的 00:00
     - cron: '0 0 * * sat,sun'     # 北京时间：08:00（周六和周日），UTC 时间：00:00（周五和周六）
   # 手动触发条件
-  workflow_dispatch:  
+  workflow_dispatch:
     description: 手动触发微信阅读任务
     inputs:
       mode:
@@ -37,7 +37,7 @@ on:
         type: string
         description: '手动输入自定义延迟时间（分钟，仅手动触发有效）。输入后，任务会延迟相应的分钟数执行。'
         required: false
-      debug_schedule:  
+      debug_schedule:
         type: choice
         description: '选择调试定时任务，开启后按指定任务时间运行'
         required: false
@@ -58,7 +58,7 @@ jobs:
       week_random_skipped: ${{ steps.week_random_check.outputs.skipped }}
 
     steps:
-    - name: 🔧 设置 DNS  
+    - name: 🔧 设置 DNS
       run: |
         # 配置主 DNS 服务器为 Google 的公共 DNS
         echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
