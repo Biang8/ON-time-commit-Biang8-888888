@@ -107,17 +107,25 @@ jobs:
         # 计算当前时间到预定时间的延迟
         CURRENT_TIME=$(date +"%M %H %d %m %w")
         IFS=' ' read -r MINUTE HOUR DAY MONTH WEEKDAY <<< "$CURRENT_TIME"
-        IFS=' ' read -r CRON_MINUTE CRON_HOUR CRON_DAY CRON_MONTH CRON_WEEKDAY <<< $(echo $SCHEDULE | sed 's/*/0/g')
-        # 转换星期几的格式
-        case $CRON_WEEKDAY in
-          sun) CRON_WEEKDAY=0 ;;
-          mon) CRON_WEEKDAY=1 ;;
-          tue) CRON_WEEKDAY=2 ;;
-          wed) CRON_WEEKDAY=3 ;;
-          thu) CRON_WEEKDAY=4 ;;
-          fri) CRON_WEEKDAY=5 ;;
-          sat) CRON_WEEKDAY=6 ;;
-        esac
+        # 打印原始的 SCHEDULE 变量
+        echo "原始 SCHEDULE: $SCHEDULE"
+        CLEANED_SCHEDULE=$(echo $SCHEDULE | sed 's/*/0/g' | sed 's/sat/6/g' | sed 's/sun/0/g')
+        # 打印清理后的 SCHEDULE 变量
+        echo "清理后的 SCHEDULE: $CLEANED_SCHEDULE"
+        IFS=' ' read -r CRON_MINUTE CRON_HOUR CRON_DAY CRON_MONTH CRON_WEEKDAY <<< "$CLEANED_SCHEDULE"
+
+        # 打印解析后的变量
+        echo "解析后的 CRON_MINUTE: $CRON_MINUTE"
+        echo "解析后的 CRON_HOUR: $CRON_HOUR"
+        echo "解析后的 CRON_DAY: $CRON_DAY"
+        echo "解析后的 CRON_MONTH: $CRON_MONTH"
+        echo "解析后的 CRON_WEEKDAY: $CRON_WEEKDAY"
+
+        # 检查解析后的变量是否为数字
+        if ! [[ $CRON_MINUTE =~ ^[0-9]+$ ]] || ! [[ $CRON_HOUR =~ ^[0-9]+$ ]] || ! [[ $CRON_DAY =~ ^[0-9]+$ ]] || ! [[ $CRON_MONTH =~ ^[0-9]+$ ]] || ! [[ $CRON_WEEKDAY =~ ^[0-9]+$ ]]; then
+            echo "Error: 解析后的日期变量包含非数字字符"
+            exit 1
+        fi
 
         # 打印调试信息
         echo "CURRENT: MONTH=$MONTH, DAY=$DAY, HOUR=$HOUR, MINUTE=$MINUTE"
@@ -146,14 +154,6 @@ jobs:
         echo "⏳ 调试任务延迟：${DELAY_MINUTES} 分钟"
         sleep $DELAY_MINUTES
         
-    - name: ⏱️ 自定义延迟（手动触发）
-      if: github.event_name == 'workflow_dispatch' && github.event.inputs.custom_delay != ''
-      run: |
-        DELAY=${{ github.event.inputs.custom_delay }}
-        echo "⏳ 自定义延迟：${DELAY} 分钟"
-        sleep $((DELAY * 60))
-        echo "✅ 延迟执行完成"
-
     - name: 🎲 周随机检查
       id: week_random_check
       if: (github.event_name == 'schedule' && github.event.schedule == '0 0 * * sat,sun') || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_schedule == '周随机任务')
