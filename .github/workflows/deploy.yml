@@ -1,4 +1,4 @@
-name: Defect number  
+name: Old WeChat  
 
 # 定义工作流的触发条件
 on:
@@ -254,7 +254,7 @@ jobs:
         WXREAD_CURL_BASH: ${{ secrets.WXREAD_CURL_BASH }}
         PUSH_METHOD: ${{ secrets.PUSH_METHOD }}
         PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
-        WXPUSHER_SPT: ${{ secrets.WXPUSHER_SPT }}
+        WXPUSHER_SPT: ${{ secrets.WXPUSHER_SPT }}  
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         READ_NUM: ${{ env.READ_NUM }}
