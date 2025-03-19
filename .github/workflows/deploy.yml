@@ -280,4 +280,6 @@ jobs:
         echo "::endgroup::"
 
     - name: 🚀 执行主程序
-      if: steps.week_random_check.output
+      if: steps.week_random_check.outputs.skipped != 'true'
+      env:
+        WXREAD_CURL_BASH: ${{ secrets.W
