@@ -269,4 +269,7 @@ jobs:
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         READ_NUM: ${{ env.READ_NUM }}
-        READ_COMPLETE_HEADER: ${{ secrets.READ
+        READ_COMPLETE_HEADER: ${{ secrets.READ_COMPLETE_HEADER }}
+      run: |
+        # 假设主程序是 Python 脚本，这里使用 Python 执行主程序
+        python main.py    
