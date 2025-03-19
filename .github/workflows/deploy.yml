@@ -269,4 +269,10 @@ jobs:
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         READ_NUM: ${{ env.READ_NUM }}
-        READ_COMPLETE_HEADER: ${{ secrets.READ_COMPLETE_HEADER }}
+        READ_COMPLETE_HEADER: ${{ secrets.READ_COMPLETE_HEADER }}  # 读取 GitHub Secrets 里的变量
+      run: |
+        echo "=== 执行参数 ==="
+        echo "READ_NUM: ${{ env.READ_NUM }}"
+        echo "READ_COMPLETE_HEADER: ${{ env.READ_COMPLETE_HEADER }}"
+        # 执行主程序
+        python main.py || { echo "❌ 主程序执行失败"; exit 1; }
