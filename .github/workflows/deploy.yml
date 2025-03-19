@@ -108,14 +108,31 @@ jobs:
         CURRENT_TIME=$(date +"%M %H %d %m %w")
         IFS=' ' read -r MINUTE HOUR DAY MONTH WEEKDAY <<< "$CURRENT_TIME"
         IFS=' ' read -r CRON_MINUTE CRON_HOUR CRON_DAY CRON_MONTH CRON_WEEKDAY <<< $(echo $SCHEDULE | sed 's/*/0/g')
-        # 简单计算延迟（这里未考虑日期跨天等复杂情况，可按需扩展）
-        DELAY_MINUTES=$(( (CRON_HOUR - HOUR) * 60 + (CRON_MINUTE - MINUTE) ))
-        if [ $DELAY_MINUTES -lt 0 ]; then
-          DELAY_MINUTES=$((DELAY_MINUTES + 24 * 60))
-        fi
-        echo "⏳ 调试任务延迟：${DELAY_MINUTES} 分钟"
-        sleep $((DELAY_MINUTES * 60))
 
+        # 转换星期几的格式
+        case $CRON_WEEKDAY in
+          sun) CRON_WEEKDAY=0 ;;
+          mon) CRON_WEEKDAY=1 ;;
+          tue) CRON_WEEKDAY=2 ;;
+          wed) CRON_WEEKDAY=3 ;;
+          thu) CRON_WEEKDAY=4 ;;
+          fri) CRON_WEEKDAY=5 ;;
+          sat) CRON_WEEKDAY=6 ;;
+        esac
+
+        # 计算延迟时间，考虑日期跨天
+        CURRENT_TIMESTAMP=$(date -d "$MONTH/$DAY/$((1900 + $(date +%y))) $HOUR:$MINUTE" +%s)
+        SCHEDULED_TIMESTAMP=$(date -d "$CRON_MONTH/$CRON_DAY/$((1900 + $(date +%y))) $CRON_HOUR:$CRON_MINUTE" +%s)
+
+        if [ $SCHEDULED_TIMESTAMP -lt $CURRENT_TIMESTAMP ]; then
+          SCHEDULED_TIMESTAMP=$((SCHEDULED_TIMESTAMP + 86400)) # 加一天
+        fi
+
+        DELAY_SECONDS=$((SCHEDULED_TIMESTAMP - CURRENT_TIMESTAMP))
+        DELAY_MINUTES=$((DELAY_SECONDS / 60))
+
+        echo "⏳ 调试任务延迟：${DELAY_MINUTES} 分钟"
+        sleep $DELAY_MINUTES
     - name: ⏱️ 随机延迟（自动模式或计划模式或手动触发调试模式无自定义延迟）
       if: (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.mode == '自动' || github.event.inputs.debug_schedule != '无') && github.event.inputs.custom_delay == ''))
       run: |
