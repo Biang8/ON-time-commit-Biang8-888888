@@ -1,4 +1,4 @@
-name: Defect number 
+name: wxread   
 
 on:
   # 注释掉定时任务触发条件
