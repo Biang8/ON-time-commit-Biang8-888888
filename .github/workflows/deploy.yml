@@ -1,8 +1,8 @@
-name: wxread        
+name: Defect number  
 
 on:
   # 定时任务触发条件
-  #schedule:  
+  schedule:
     # 晚间任务：北京时间每天 22:00（UTC 14:00）
     - cron: '0 14 * * *'
     # 早间任务：北京时间周一到周五 05:00（UTC 前一天 21:00）
