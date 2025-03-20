@@ -1,18 +1,18 @@
-name: Defect number  
+name: Defect number 
 
 on:
-  # 定时任务触发条件
-  schedule:
-    # 晚间任务：北京时间每天 22:00（UTC 14:00）
-    - cron: '0 14 * * *'
-    # 早间任务：北京时间周一到周五 05:00（UTC 前一天 21:00）
-    - cron: '0 21 * * 0-4'
-    # 午间任务：北京时间周一到周五 11:40（UTC 03:40）
-    - cron: '40 3 * * 1-5'
-    # 周末任务：北京时间周六、周日 17:00（UTC 09:00）
-    - cron: '0 9 * * sat,sun'
-    # 周随机任务：北京时间周末 08:00（UTC 前一天 00:00）
-    - cron: '0 0 * * sat,sun'
+  # 注释掉定时任务触发条件
+  # schedule:
+  #   # 晚间任务：北京时间每天 22:00（UTC 14:00）
+  #   - cron: '0 14 * * *'
+  #   # 早间任务：北京时间周一到周五 05:00（UTC 前一天 21:00）
+  #   - cron: '0 21 * * 0-4'
+  #   # 午间任务：北京时间周一到周五 11:40（UTC 03:40）
+  #   - cron: '40 3 * * 1-5'
+  #   # 周末任务：北京时间周六、周日 17:00（UTC 09:00）
+  #   - cron: '0 9 * * sat,sun'
+  #   # 周随机任务：北京时间周末 08:00（UTC 前一天 00:00）
+  #   - cron: '0 0 * * sat,sun'
 
   # 手动触发条件
   workflow_dispatch:
@@ -253,4 +253,4 @@ jobs:
             git add run_data.log
             git commit -m "Update run_data.log [skip ci]"
             git push
-          fi
+          fi    
