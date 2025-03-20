@@ -3,6 +3,8 @@
 **本项目基于 [findmover/wxread](https://github.com/findmover/wxread) 进行优化和扩展。**  
 使用 **GitHub Actions** 自动执行 **微信阅读任务**，支持 **定时触发** 和 **手动触发**，可自由配置 **阅读时间**、**执行延迟** 和 **调试定时任务**。  
 
+**⚠️ 注意：GitHub Actions 每月只有 2000 分钟的免费配额，若需使用定时任务功能，请删除 `.github/workflows` 对应文件中 `#schedule:` 前的 `#`。**
+
 ---
 
 ## 🚀 功能介绍  
@@ -92,3 +94,17 @@
 如需在本地运行，请手动执行：
 ```bash
 python main.py  
+---
+
+## 🔧 **环境变量（Secrets）**  
+
+**⚠️ 请在 GitHub Secrets 中配置 `WXREAD_CURL_BASH`，否则无法正常运行。**  
+
+| 变量名 | 说明 | 必填 |
+|--------|------|------|
+| `WXREAD_CURL_BASH` | 微信阅读 API 的 curl_bash 数据 | ✅ |
+| `PUSH_METHOD` | 推送方式（pushplus / wxpusher / telegram） | ❌ |
+| `PUSHPLUS_TOKEN` | pushplus 推送 Token（若使用 pushplus） | ❌ |
+| `WXPUSHER_SPT` | wxpusher 推送 Token（若使用 wxpusher） | ❌ |
+| `TELEGRAM_BOT_TOKEN` | Telegram Bot Token（若使用 Telegram） | ❌ |
+| `TELEGRAM_CHAT_ID` | Telegram Chat ID（若使用 Telegram） | ❌ |
