@@ -26,6 +26,9 @@
    - **手动模式**：支持 `custom_time` 设定阅读时长，或使用系统默认值。  
    - **自定义 `custom_delay`** 控制任务启动时间。  
 
+✅ **主逻辑处理**：`main.py` 文件负责整个阅读任务的主逻辑，包括字段拼接、模拟请求、处理 Cookie 过期、记录运行数据和发送推送通知等。
+✅ **自定义配置**：`config.py` 文件用于自定义配置，如阅读次数、推送 token 等，同时还能解析 Curl 命令获取请求头和 Cookie 信息。
+
 ---
 
 ## ⏰ 触发方式  
@@ -88,12 +91,15 @@
 4. **自定义延迟**：手动触发且设置了 `custom_delay` 时，任务会延迟相应的分钟数执行。  
 5. **周随机检查**：周随机任务有一定概率跳过执行。  
 6. **生成 `READ_NUM`**：根据触发方式和输入参数，生成相应的 `READ_NUM`。  
-7. **执行 `main.py`** 完成阅读任务。  
+7. **执行 `main.py`**：执行主逻辑文件 `main.py` 完成阅读任务，具体步骤如下：
+    - 从 `config.py` 中获取选定书籍，并更新请求数据中的 `b` 值。
+    - 循环进行阅读请求，每次请求前更新动态参数，如 `ct`、`ts`、`rn`、`sg` 和 `s`。
+    - 发送阅读请求，若请求成功则累计阅读时间，每次阅读间隔 30 秒；若请求失败且提示 Cookie 过期，则尝试刷新 `wr_skey` 密钥。
+    - 若刷新密钥成功，则重新尝试本次阅读；若刷新失败，则终止运行并发送错误推送。
+    - 阅读任务完成后，发送推送通知（若配置了推送方式），并记录运行数据到 `run_data.log` 文件。
 
 ### **本地运行**  
-如需在本地运行，请手动执行：
-```bash
-python main.py  
+如需在本地运行，请手动执行：python main.py
 ---
 
 ## 🔧 **环境变量（Secrets）**  
@@ -102,9 +108,12 @@ python main.py
 
 | 变量名 | 说明 | 必填 |
 |--------|------|------|
-| `WXREAD_CURL_BASH` | 微信阅读 API 的 curl_bash 数据 | ✅ |
-| `PUSH_METHOD` | 推送方式（pushplus / wxpusher / telegram） | ❌ |
-| `PUSHPLUS_TOKEN` | pushplus 推送 Token（若使用 pushplus） | ❌ |
-| `WXPUSHER_SPT` | wxpusher 推送 Token（若使用 wxpusher） | ❌ |
-| `TELEGRAM_BOT_TOKEN` | Telegram Bot Token（若使用 Telegram） | ❌ |
-| `TELEGRAM_CHAT_ID` | Telegram Chat ID（若使用 Telegram） | ❌ |
+| `READ_NUM` | 阅读次数，若未设置，默认值为 120。可在 `config.py` 中配置，也可通过环境变量设置。 | ❌ |
+| `PUSH_METHOD` | 推送方式（pushplus / wxpusher / telegram），用于阅读任务完成后的消息推送。 | ❌ |
+| `PUSHPLUS_TOKEN` | pushplus 推送 Token，若使用 pushplus 推送方式，则需要配置该 Token。 | ❌ |
+| `WXPUSHER_SPT` | wxpusher 推送 Token，若使用 wxpusher 推送方式，则需要配置该 Token。 | ❌ |
+| `TELEGRAM_BOT_TOKEN` | Telegram Bot Token，若使用 Telegram 推送方式，则需要配置该 Bot Token。 | ❌ |
+| `TELEGRAM_CHAT_ID` | Telegram Chat ID，若使用 Telegram 推送方式，则需要配置该 Chat ID。 | ❌ |
+| `WXREAD_CURL_BASH` | 微信阅读 API 的 curl_bash 数据，用于解析请求头和 Cookie 信息。若未设置，将使用默认的请求头和 Cookie。 | ✅ |
+| `READ_COMPLETE_HEADER` | 阅读完成通知的标题，若未设置，默认值为 "🎉 微信阅读已完成！"。 | ❌ |
+    
