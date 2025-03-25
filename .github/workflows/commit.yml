@@ -24,7 +24,7 @@ jobs:
 
     - name: Re setting the url for `origin`
       run: |
-        git remote set-url origin https://MayoBlueSky:${{ secrets.GITHUB_TOKEN }}@github.com/Biang8/ON-time-commit-Biang8-888888.git  
+        git remote set-url origin https://Biang0:${{ secrets.GITHUB_TOKEN }}@github.com/Biang8/ON-time-commit-Biang8-888888.git    
     - name: Adding git info
       run: |
         git config --global user.name "Biang8"    
