@@ -16,7 +16,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: github.event.repository.owner.id == github.event.sender.id || not github.event.sender.id
+    if: github.event.repository.owner.id == github.event.sender.id || github.event.sender.id != github.event.sender.id
 
     steps:
     - name: Getting the repo
@@ -47,6 +47,6 @@ jobs:
         BRANCH=$(git symbolic-ref --short HEAD)
         echo "::set-output name=branch::$BRANCH"
 
-    - name: Finilly pushing the repo
+    - name: Finally pushing the repo
       run: |
         git push origin ${{ steps.branch_name.outputs.branch }}
