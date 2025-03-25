@@ -16,7 +16,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: github.event.repository.owner.id == github.event.sender.id || !github.event.sender.id  
+    if: github.event.repository.owner.id == github.event.sender.id || !github.event.sender.id    
 
     steps:
     - name: Getting the repo
@@ -24,7 +24,7 @@ jobs:
 
     - name: Re setting the url for `origin`
       run: |
-        git remote set-url origin https://MayoBlueSky:${{ secrets.GITHUB_TOKEN }}@github.com/MayoBlueSky/time-commit.git
+        git remote set-url origin https://MayoBlueSky:${{ secrets.GITHUB_TOKEN }}@github.com/Biang8/ON-time-commit-Biang8-888888.git  
     - name: Adding git info
       run: |
         git config --global user.name "Biang8"    
