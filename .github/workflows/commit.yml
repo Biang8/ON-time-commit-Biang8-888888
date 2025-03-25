@@ -45,7 +45,7 @@ jobs:
       id: branch_name
       run: |
         BRANCH=$(git symbolic-ref --short HEAD)
-        echo "::set-output name=branch::$BRANCH"
+        echo "branch=$BRANCH" >> $GITHUB_OUTPUT
 
     - name: Finally pushing the repo
       run: |
