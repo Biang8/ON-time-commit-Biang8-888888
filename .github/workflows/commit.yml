@@ -9,14 +9,14 @@ name: Github Actions Commit
 on:
   workflow_dispatch:
   schedule:  # Everday
-    - cron: '00 00/2 * * *'  
+    - cron: '00 00/2 * * *'    
   repository_dispatch:  # For requests bassed commit
     types: start_action  # <<< WORK HERE
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: github.event.repository.owner.id == github.event.sender.id || !github.event.sender.id    
+    if: github.event.repository.owner.id == github.event.sender.id || !github.event.sender.id
 
     steps:
     - name: Getting the repo
@@ -24,15 +24,29 @@ jobs:
 
     - name: Re setting the url for `origin`
       run: |
-        git remote set-url origin https://Biang0:${{ secrets.GITHUB_TOKEN }}@github.com/Biang8/ON-time-commit-Biang8-888888.git    
+        git remote set-url origin https://Biang0:${{ secrets.GITHUB_TOKEN }}@github.com/Biang8/ON-time-commit-Biang8-888888.git
+
     - name: Adding git info
       run: |
-        git config --global user.name "Biang8"    
-        git config --global user.email "${{ secrets.EMAIL }}"  # Added email in secrets    
+        git config --global user.name "Biang8"
+        git config --global user.email "${{ secrets.EMAIL }}"  # Added email in secrets
+
+    - name: Initialize the repository if it's empty
+      run: |
+        if [ -z "$(git rev-parse --verify HEAD 2>/dev/null)" ]; then
+          git commit --allow-empty -m "Initial commit"
+        fi
+
     - name: Creating an empty commit 
       run: |
         git commit --allow-empty -m "My amazing commit"
-    
+
+    - name: Determine the branch name
+      id: branch_name
+      run: |
+        BRANCH=$(git symbolic-ref --short HEAD)
+        echo "::set-output name=branch::$BRANCH"
+
     - name: Finilly pushing the repo
       run: |
-        git push origin master
+        git push origin ${{ steps.branch_name.outputs.branch }}
