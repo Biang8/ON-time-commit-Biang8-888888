@@ -1,52 +1,41 @@
 name: Github Actions Commit
 
-#  Replase the fallowing according to your needs
-# GITHUB_USERNMAE: 'MayoBlueSky'
-# GITHUB_REPO: 'time-commit'
-#
-# CRON_TIME: '00 00 * * *'
-
 on:
   workflow_dispatch:
-  schedule:  # Everday
-    - cron: '00 00/2 * * *'  
-  repository_dispatch:  # For requests bassed commit
-    types: start_action  # <<< WORK HERE
+  schedule:  # 每 2 小时执行一次
+    - cron: '0 */2 * * *'  
+  repository_dispatch:  # 通过 API 触发
+    types: start_action
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: github.event.repository.owner.id == github.event.sender.id || github.event.sender.id != github.event.sender.id
 
     steps:
-    - name: Getting the repo
-      uses: actions/checkout@v2
+    - name: Checkout repository
+      uses: actions/checkout@v4  # 使用最新版本
 
-    - name: Re setting the url for `origin`
-      run: |
-        git remote set-url origin https://Biang0:${{ secrets.GITHUB_TOKEN }}@github.com/Biang8/ON-time-commit-Biang8-888888.git
-
-    - name: Adding git info
+    - name: Configure Git
       run: |
         git config --global user.name "Biang8"
-        git config --global user.email "${{ secrets.EMAIL }}"  # Added email in secrets
+        git config --global user.email "${{ secrets.EMAIL }}"  # 确保 EMAIL 已在 GitHub Secrets 设置
 
     - name: Initialize the repository if it's empty
       run: |
-        if [ -z "$(git rev-parse --verify HEAD 2>/dev/null)" ]; then
+        if ! git rev-parse --verify HEAD; then
+          git checkout -b main
           git commit --allow-empty -m "Initial commit"
+          git push origin main
         fi
 
-    - name: Creating an empty commit 
+    - name: Create an empty commit
       run: |
         git commit --allow-empty -m "My amazing commit"
 
     - name: Determine the branch name
       id: branch_name
-      run: |
-        BRANCH=$(git symbolic-ref --short HEAD)
-        echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+      run: echo "branch=$(git rev-parse --abbrev-ref HEAD)" >> $GITHUB_ENV
 
-    - name: Finally pushing the repo
+    - name: Push changes
       run: |
-        git push origin ${{ steps.branch_name.outputs.branch }}
+        git push origin ${{ env.branch }}
